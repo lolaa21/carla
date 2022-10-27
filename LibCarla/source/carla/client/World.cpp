@@ -251,6 +251,13 @@ namespace client {
     const geom::Vector3D DownVector(0,0,-1);
     return ProjectPoint(location, DownVector, search_distance);
   }
+  std::vector<rpc::LabelledPoint> World::GroundProjections(
+      const std::vector<geom::Location>& locations,
+      const std::vector<ActorId>& actor_ids,
+      float search_distance) const {
+    const geom::Vector3D down_vector(0, 0, -1);
+    return _episode.Lock()->ProjectPoints(locations, down_vector, search_distance, actor_ids);
+  }
 
   std::vector<rpc::LabelledPoint> World::CastRay(
       geom::Location start_location, geom::Location end_location) const {

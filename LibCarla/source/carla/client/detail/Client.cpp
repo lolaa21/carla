@@ -617,6 +617,15 @@ namespace detail {
     return _pimpl->CallAndWait<return_t>("project_point", location, direction, search_distance);
   }
 
+  std::vector<rpc::LabelledPoint> Client::ProjectPoints(
+      const std::vector<geom::Location>& locations,
+      geom::Vector3D direction,
+      float search_distance,
+      const std::vector<ActorId>& actor_ids) const {
+    using return_t = std::vector<rpc::LabelledPoint>;
+    return _pimpl->CallAndWait<return_t>("project_points", locations, direction, search_distance, actor_ids);
+  }
+
   std::vector<rpc::LabelledPoint> Client::CastRay(
       geom::Location start_location, geom::Location end_location) const {
     using return_t = std::vector<rpc::LabelledPoint>;

@@ -8,6 +8,8 @@
 #include "Carla/Util/RayTracer.h"
 
 #include "Carla/Game/CarlaStatics.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "DrawDebugHelpers.h"
 
 
 namespace crp = carla::rpc;
@@ -55,4 +57,52 @@ std::pair<bool, crp::LabelledPoint> URayTracer::ProjectPoint(
     return std::make_pair(bDidHit, crp::LabelledPoint(Hit.Location, ComponentTag));
   }
   return std::make_pair(bDidHit, crp::LabelledPoint(FVector(0.0f,0.0f,0.0f), crp::CityObjectLabel::None));
+
+
+  }
+
+std::vector<crp::LabelledPoint> URayTracer::ProjectPoints(
+    const std::vector<FVector>& StartLocations,
+    FVector Direction,
+    float MaxDistance,
+    UWorld * World,
+    const std::vector<const AActor *>& IgnoredActors)
+{
+    std::vector<crp::LabelledPoint> Result;
+    Result.reserve(StartLocations.size());
+
+    // prepare for the ray tracing
+    FHitResult Hit;
+
+    FCollisionQueryParams QueryParams;
+    QueryParams.bReturnPhysicalMaterial = true;
+    for (const AActor * actor : IgnoredActors) {
+        QueryParams.AddIgnoredActor(actor);
+    }
+
+    for (const auto & StartLocation : StartLocations) {
+        bool bDidHit = World->LineTraceSingleByChannel(
+            Hit,
+            StartLocation,
+            StartLocation + Direction.GetSafeNormal() * MaxDistance,
+            ECC_Visibility,
+            QueryParams
+        );
+
+        if (!bDidHit)
+        {
+            Result.emplace_back(FVector(0.0f, 0.0f, 0.0f), crp::CityObjectLabel::None);
+            continue;
+        }
+
+        UPrimitiveComponent * Component = Hit.GetComponent();
+        crp::CityObjectLabel ComponentTag = ATagger::GetTagOfTaggedComponent(*Component);
+
+        UPhysicalMaterial * Material = Hit.PhysMaterial.Get();
+        float Friction = Material ? Material->Friction : -1.0f;
+
+        Result.emplace_back(Hit.Location, ComponentTag, crp::Vector3D(Hit.Normal.X, Hit.Normal.Y, Hit.Normal.Z), Friction);
+    }
+
+    return Result;
 }

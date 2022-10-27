@@ -182,6 +182,11 @@ namespace client {
 
     boost::optional<rpc::LabelledPoint> GroundProjection(
         geom::Location location, float search_distance = 10000.0) const;
+    
+    std::vector<rpc::LabelledPoint> GroundProjections(
+        const std::vector<geom::Location>& locations,
+        const std::vector<ActorId>& actor_ids,
+        float search_distance = 10000.f) const;    
 
     std::vector<rpc::LabelledPoint> CastRay(
         geom::Location start_location, geom::Location end_location) const;

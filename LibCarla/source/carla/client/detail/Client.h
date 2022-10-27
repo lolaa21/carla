@@ -388,6 +388,12 @@ namespace detail {
     std::pair<bool,rpc::LabelledPoint> ProjectPoint(
         geom::Location location, geom::Vector3D direction, float search_distance) const;
 
+    std::vector<rpc::LabelledPoint> ProjectPoints(
+        const std::vector<geom::Location>& locations,
+        geom::Vector3D direction,
+        float search_distance,
+        const std::vector<ActorId>& actor_ids) const;    
+
     std::vector<rpc::LabelledPoint> CastRay(
         geom::Location start_location, geom::Location end_location) const;
 

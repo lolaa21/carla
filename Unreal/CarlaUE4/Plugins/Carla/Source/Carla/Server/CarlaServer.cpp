@@ -2134,6 +2134,46 @@ void FCarlaServer::FPimpl::BindActions()
     return URayTracer::ProjectPoint(UELocation, Direction.ToFVector(),
         meter_to_centimeter * SearchDistance, World);
   };
+  
+  BIND_SYNC(project_points) << [this] (
+      const std::vector<cr::Location>& Locations,
+      cr::Vector3D Direction,
+      float SearchDistance,
+      const std::vector<cr::ActorId>& ActorIds) -> R<std::vector<cr::LabelledPoint>>
+  {
+    REQUIRE_CARLA_EPISODE();
+    auto *World = Episode->GetWorld();
+    ACarlaGameModeBase *GameMode = UCarlaStatics::GetGameMode(World);
+    ALargeMapManager *LargeMap = GameMode->GetLMManager();
+
+    std::vector<const AActor *> IgnoredActors;
+    IgnoredActors.reserve(ActorIds.size());
+    for (const cr::ActorId & Id : ActorIds)
+    {
+        FCarlaActor * View = Episode->FindCarlaActor(Id);
+        if (View)
+        {
+            IgnoredActors.emplace_back(View->GetActor());
+        }
+    }
+
+    std::vector<FVector> UELocations;
+    UELocations.reserve(Locations.size());
+    for (const auto & Location : Locations) {
+        if (LargeMap)
+        {
+            UELocations.emplace_back(LargeMap->GlobalToLocalLocation(Location));
+        }
+        else
+        {
+            UELocations.emplace_back(Location);
+        }
+    }
+
+    constexpr float meter_to_centimeter = 100.0f;
+    return URayTracer::ProjectPoints(UELocations, Direction.ToFVector(),
+        meter_to_centimeter * SearchDistance, World, IgnoredActors);
+  };
 
   BIND_SYNC(cast_ray) << [this]
       (cr::Location StartLocation, cr::Location EndLocation)

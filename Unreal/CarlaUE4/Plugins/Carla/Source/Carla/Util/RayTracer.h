@@ -33,4 +33,13 @@ public:
   static std::pair<bool, carla::rpc::LabelledPoint> ProjectPoint(
       FVector StartLocation, FVector Direction, float MaxDistance, UWorld * World);
 
+
+  static std::vector<carla::rpc::LabelledPoint> ProjectPoints(
+      const std::vector<FVector>& StartLocations,
+      FVector Direction,
+      float MaxDistance,
+      UWorld * World,
+      const std::vector<const AActor *>& IgnoredActors);
+
+
 };
